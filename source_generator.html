@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Генератор строки источника</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #1f2937;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 760px;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      padding: 32px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 28px;
+    }
+
+    p {
+      margin: 0 0 24px;
+      color: #4b5563;
+      line-height: 1.5;
+    }
+
+    .field {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 14px 20px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .primary {
+      background: #2563eb;
+      color: white;
+    }
+
+    .secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .result {
+      margin-top: 28px;
+      padding: 18px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+    }
+
+    .result h2 {
+      margin: 0 0 12px;
+      font-size: 20px;
+    }
+
+    .output {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.6;
+    }
+
+    .error {
+      color: #b91c1c;
+      margin-top: 12px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Генератор строки источника</h1>
+    <p>
+      Введите название статьи, ссылку и дату обращения. Сайт автоматически получит домен
+      и сформирует готовую строку источника по тому же принципу, что и ваш Python-код.
+    </p>
+
+    <div class="field">
+      <label for="title">Название статьи</label>
+      <input id="title" type="text" placeholder="Например: Искусственный интеллект в образовании" />
+    </div>
+
+    <div class="field">
+      <label for="url">Ссылка на статью</label>
+      <input id="url" type="url" placeholder="https://example.com/article" />
+    </div>
+
+    <div class="field">
+      <label for="accessDate">Дата обращения</label>
+      <input id="accessDate" type="text" placeholder="04.03.2026" />
+    </div>
+
+    <div class="buttons">
+      <button class="primary" id="generateBtn">Сформировать</button>
+      <button class="secondary" id="copyBtn" type="button">Скопировать</button>
+    </div>
+
+    <div class="error" id="error"></div>
+
+    <div class="result">
+      <h2>Готовая строка источника</h2>
+      <p class="output" id="output">Здесь появится результат.</p>
+    </div>
+  </div>
+
+  <script>
+    const titleInput = document.getElementById('title');
+    const urlInput = document.getElementById('url');
+    const accessDateInput = document.getElementById('accessDate');
+    const output = document.getElementById('output');
+    const error = document.getElementById('error');
+    const generateBtn = document.getElementById('generateBtn');
+    const copyBtn = document.getElementById('copyBtn');
+
+    function getDomain(url) {
+      let normalizedUrl = url.trim();
+
+      if (!/^https?:\/\//i.test(normalizedUrl)) {
+        normalizedUrl = 'https://' + normalizedUrl;
+      }
+
+      const parsedUrl = new URL(normalizedUrl);
+      return parsedUrl.hostname.replace(/^www\./i, '');
+    }
+
+    function generateSource() {
+      const title = titleInput.value.trim();
+      const url = urlInput.value.trim();
+      const accessDate = accessDateInput.value.trim();
+
+      error.textContent = '';
+
+      if (!title || !url || !accessDate) {
+        error.textContent = 'Пожалуйста, заполните все поля.';
+        output.textContent = 'Здесь появится результат.';
+        return;
+      }
+
+      try {
+        const domain = getDomain(url);
+        const source = `${title} / ${domain} [Электронный ресурс]. Режим доступа: ${url} (дата обращения: ${accessDate}).`;
+        output.textContent = source;
+      } catch (e) {
+        error.textContent = 'Некорректная ссылка. Проверьте URL.';
+        output.textContent = 'Здесь появится результат.';
+      }
+    }
+
+    async function copyResult() {
+      const text = output.textContent;
+
+      if (!text || text === 'Здесь появится результат.') {
+        error.textContent = 'Сначала сформируйте строку источника.';
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(text);
+        error.textContent = 'Результат скопирован в буфер обмена.';
+        error.style.color = '#166534';
+        setTimeout(() => {
+          error.textContent = '';
+          error.style.color = '#b91c1c';
+        }, 2000);
+      } catch (e) {
+        error.textContent = 'Не удалось скопировать текст.';
+        error.style.color = '#b91c1c';
+      }
+    }
+
+    generateBtn.addEventListener('click', generateSource);
+    copyBtn.addEventListener('click', copyResult);
+
+    [titleInput, urlInput, accessDateInput].forEach((input) => {
+      input.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          generateSource();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
