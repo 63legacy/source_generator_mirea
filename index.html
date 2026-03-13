@@ -189,7 +189,7 @@
 
       try {
         const domain = getDomain(url);
-        const source = `${title} / ${domain} [Электронный ресурс]. Режим доступа: ${url} (дата обращения: ${accessDate}).`;
+        const source = `${title} / ${domain} [Электронный ресурс]. Режим доступа: ${url} Дата обращения: ${accessDate}.`;
         output.textContent = source;
       } catch (e) {
         error.textContent = 'Некорректная ссылка. Проверьте URL.';
